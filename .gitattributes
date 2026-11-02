@@ -1,0 +1,7 @@
+* text=auto
+
+# 二进制资源：不要让 git 试图做换行转换
+*.ico   binary
+*.png   binary
+*.exe   binary
+*.dll   binary

@@ -1,0 +1,36 @@
+# ---- 构建产物 ----
+# build/ 是 PyInstaller 的中间目录（本机 320MB），dist/ 与 release/ 是可分发件（各 39MB）。
+# 这些都由 build.py 重新生成，不入版本历史；可执行文件走 GitHub Releases 附件。
+build/
+dist/
+release/
+*.spec
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---- 测试与运行残留 ----
+# 验收脚本会在 %TEMP% 下建临时目录，但直接跑测试时也可能落在这里
+*.log
+settings.json
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---- 版本资源由 build.py 生成 ----
+version_v*.txt
