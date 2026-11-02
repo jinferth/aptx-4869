@@ -5,6 +5,11 @@
 
 **English manual** · [中文说明](README.md) · **[Download the latest release](https://github.com/jinferth/aptx-4869/releases/latest)**
 
+![APTX-4869 main window](docs/screenshot-en.png)
+
+> Left: system status and folder watch · Middle: evidence list · Right: case card for the selected
+> image (metadata and resulting output) · Bottom: analysis options and the per-file log
+
 ---
 
 ## Contents

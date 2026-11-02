@@ -1,12 +1,17 @@
-# 侦探工具箱 v5.14 · 使用说明与演进记录
+# 侦探工具箱 v5.14.1 · 使用说明与演进记录
 
 > **English** — APTX-4869 is a batch image processor for Windows: convert formats, resize, watermark, compress to a target file size, batch rename, and watch a folder for new images. Single exe, fully offline, no installer, MIT licensed.
-> **[Read the English manual →](README_EN.md)** · **[Download v5.14](https://github.com/jinferth/aptx-4869/releases/latest)**
+> **[Read the English manual →](README_EN.md)** · **[Download v5.14.1](https://github.com/jinferth/aptx-4869/releases/latest)**
 
 > APTX-4869 图像情报分析终端 —— 一个放在桌面的批量图片处理器。
 > 转格式、缩放、加水印、看成品，全部在一个窗口里完成，不需要联网。
 
 **中文说明** · [English manual](README_EN.md)
+
+![APTX-4869 主界面](docs/screenshot-zh.png)
+
+> 左：系统状态与文件夹监听 · 中：证据清单 · 右：选中图的案卷卡（信息与成品预览）
+> 下：分析配置（格式 / 缩放 / 水印 / 目标体积）与逐张处理日志
 
 ---
 
@@ -33,7 +38,7 @@
 
 双击 `dist\侦探工具箱_v5.13.exe`
 
-> v5.14 起发布件在 `release\` 目录：`APTX-4869_v5.14.exe`（英文名）、`侦探工具箱_v5.14.exe`（中文名）、`SHA256.txt`、`RELEASE_NOTES.md`、两份说明书。。
+> v5.14 起发布件在 `release\` 目录：`APTX-4869_v5.14.1.exe`（英文名）、`侦探工具箱_v5.14.1.exe`（中文名）、`SHA256.txt`、`RELEASE_NOTES.md`、`LICENSE` 与两份说明书。
 
 - 单文件程序，**首次启动需要 2–4 秒**：它要把内置的 Python 运行时解压到临时目录，第二次启动会快一些。这不是卡死，不要重复双击。
 - 程序不需要安装、不写注册表、不联网。
@@ -59,7 +64,7 @@ python image_processor_pro.py
 
 ```
 ┌──────────┬────────────────────────────────────────────┬──────────────┐
-│ 取景框   │  CASE FILE  v5.14          CASE No. 04869-07 │ 案卷·FORENSIC│
+│ 取景框   │  CASE FILE  v5.14.1          CASE No. 04869-07 │ 案卷·FORENSIC│
 │ 图标     │                                            │ 密级·机密    │
 │          │  01 · EVIDENCE LIST  证据清单               │ ┌──────────┐ │
 │ EDOGAWA  │  [浏览并挑选图片][导入目录][移除选中]        │ │ 缩略图    │ │
@@ -432,7 +437,7 @@ JPG 和 BMP 格式本身不支持透明，程序把它铺成白色。需要透�
 
 ## 九、提升点：相对 v5.2 做了什么
 
-从 v5.2 到现在的 v5.14，改动分两类：**先修正确性，再做视觉，最后解决日常摩擦**。顺序很重要——一个会卡死的程序，界面再好看也没人用；界面再顺，每次都要重设参数也留不住人。
+从 v5.2 到现在的 v5.14.1，改动分两类：**先修正确性，再做视觉，最后解决日常摩擦**。顺序很重要——一个会卡死的程序，界面再好看也没人用；界面再顺，每次都要重设参数也留不住人。
 
 ### 9.1 稳定性与正确性（v5.3）
 
@@ -666,25 +671,26 @@ v5.9 预设方案与拍摄信息保留；v5.10 批量重命名；v5.11 文件夹
 
 ```
 侦探工具箱\
-├─ image_processor_pro.py          主程序（v5.14）
+├─ image_processor_pro.py          主程序（v5.14.1）
 ├─ image_processor_pro_v5.2_backup.py   v5.2 原始备份
 ├─ build.py                        构建脚本（一条命令出发布件）
 ├─ build.bat                       Windows 下双击即可构建
 ├─ README.md                       本文档（中文）
 ├─ README_EN.md                    英文说明书
 ├─ LICENSE                         MIT 许可
+├─ docs\                           界面截图（README 用）
 ├─ tests\                          自动化验收脚本
 │  ├─ run_all.py                   一键回归
 │  ├─ _common.py                   断言原语与公共部件
 │  └─ test_v5*.py                  9 个验收脚本
-├─ 侦探工具箱_v5.14.spec            当前打包配置（由 build.py 生成）
-├─ version_v5.14.txt                版本资源（exe 属性面板显示的信息）
+├─ 侦探工具箱_v5.14.1.spec          当前打包配置（由 build.py 生成）
+├─ version_v5.14.1.txt              版本资源（exe 属性面板显示的信息）
 ├─ conan_hd.ico                    多尺寸图标（7 帧）
 ├─ assets\
 │  └─ app_icon_512.png             512px 图标源文件（左侧取景框用）
 ├─ release\                        发布目录（对外分发用）
-│  ├─ APTX-4869_v5.14.exe          英文名程序
-│  ├─ 侦探工具箱_v5.14.exe          中文名程序（同一份）
+│  ├─ APTX-4869_v5.14.1.exe        英文名程序
+│  ├─ 侦探工具箱_v5.14.1.exe        中文名程序（同一份）
 │  ├─ SHA256.txt                   校验和
 │  ├─ RELEASE_NOTES.md             发布说明
 │  ├─ README.md / README_EN.md     两份说明书
@@ -722,4 +728,4 @@ python tests/run_all.py      # 跑一遍回归
 
 ---
 
-*最后更新：v5.14（2026-11-02）*
+*最后更新：v5.14.1（2026-11-02）*

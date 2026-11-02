@@ -2,6 +2,19 @@
 """
 APTX-4869 图像情报分析终端 (Intelligence Analysis Terminal)
 =========================================================
+v5.14.1 变更摘要（切语言不再丢结果）
+---------------------------------------
+[修正] 切语言会把清单整体重置：已处理的图全部退回"待处理"、尺寸列变空、右侧详情卡清空。
+       根因是 _refresh_tree 把状态写死成 STATUS_TEXT[0]；加文件时看不出问题，
+       但 v5.13 起切语言也走这个函数。现改为按 status/sizes 里的真实状态重建，
+       并保留选中项与详情卡。
+[修正] 处理结束后再切语言，左侧状态区的"成功/失败/用时"不跟着翻译——那行文案是
+       运行时拼出来的，控件登记表覆盖不到。新增 _refresh_progress_label 在切语言时重刷。
+[修正] "重试失败"按钮文案是硬编码中文拼的，切英文后仍是中文；语言包里还留着一个
+       半截的键 "重试失败 ("。改为 trf 模板。
+[新增] docs/ 下的中英文界面截图，两份说明书顶部嵌入。
+[说明] 切语言不追溯翻译历史日志——那是当时发生的事，改动它反而失真。
+
 v5.14 变更摘要（发布就绪）
 ---------------------------------------
 [新增] 英文说明书 README_EN.md：12 章完整对等版，不是摘要。中文 README 顶部加语言指引。
@@ -143,7 +156,7 @@ except Exception:  # pragma: no cover
 # ============================ 常量 ============================
 
 APP_NAME = "侦探工具箱"
-APP_VERSION = "v5.14"
+APP_VERSION = "v5.14.1"
 WINDOW_TITLE = f"APTX-4869 图像情报分析终端 (Intelligence Analysis Terminal) {APP_VERSION}"
 
 OUTPUT_DIRNAME = "resolved_cases"
@@ -290,7 +303,7 @@ I18N_EN = {
     "开始推理": "Start Processing",
     "取消": "Cancel",
     "重试失败": "Retry Failed",
-    "重试失败 (": "Retry Failed (",
+    "重试失败 ({n})": "Retry Failed ({n})",
     "导出报告": "Export Report",
     # ---- 案卷卡 ----
     "案卷 · FORENSIC": "CASE · FORENSIC",
@@ -966,6 +979,9 @@ class ImageProcessorPro:
         self.source_files: list[str] = []
         self.status: dict[str, int] = {}
         self.results: dict[str, str] = {}
+        # 每张图的成品尺寸文案（"1600×1200"）。切语言要重建清单，
+        # 不能指望从表格里读回旧值——重建时表格已经被清空了。
+        self.sizes: dict[str, str] = {}
         self.failed_paths: list[str] = []
         self.report_path: str | None = None
         self.target_format = tk.StringVar(value=str(self.settings["target_format"]))
@@ -1174,6 +1190,7 @@ class ImageProcessorPro:
         self._update_watch_ui()
         self._refresh_output_hint()
         self._refresh_presets()
+        self._refresh_progress_label()
         self._draw_cells()
         self._refresh_tree()
         selected = self._selected_path()
@@ -2160,6 +2177,7 @@ class ImageProcessorPro:
                 self.source_files.remove(path)
                 self.status.pop(path, None)
                 self.results.pop(path, None)
+                self.sizes.pop(path, None)
         self._refresh_tree()
         self.log(f"Removed {len(selected)} items.", "dim")
 
@@ -2170,27 +2188,43 @@ class ImageProcessorPro:
         self.source_files = []
         self.status.clear()
         self.results.clear()
+        self.sizes.clear()
         self._refresh_tree()
         self.log("EVIDENCE LIST CLEARED.", "dim")
 
     def _refresh_tree(self) -> None:
+        """重建清单。切语言、加文件、删文件都走这里。
+
+        必须按 status/sizes 里记录的真实状态渲染：这个函数以前写死成"待处理"，
+        加文件时看着没问题，但 v5.13 起切语言也调用它，结果处理完的图会全部
+        退回"待处理"、尺寸列变空、右侧详情卡被清空。
+        """
+        selected = self._selected_path()
         self.tree.delete(*self.tree.get_children())
         for path in self.source_files:
+            code = self.status.get(path, 0)
             self.tree.insert("", "end", iid=path,
                              text=os.path.basename(path),
-                             values=("", self.tr(STATUS_TEXT[0])),
-                             tags=(str(self.status.get(path, 0)),))
+                             values=(self.sizes.get(path, ""), self.tr(STATUS_TEXT[code])),
+                             tags=(str(code),))
         count = len(self.source_files)
         if not self._running:
             self.lbl_status.config(text=f"READY · {count}", fg=C["blue"])
         self.case_no.set(f"CASE No. 04869-{count:02d}")
-        self._clear_detail()
+        # 选中的文件还在清单里就恢复选中与详情；被删掉了才清空
+        if selected and selected in self.source_files:
+            self.tree.selection_set(selected)
+            self._show_detail(selected)
+        else:
+            self._clear_detail()
         self._draw_cells()
         self._refresh_output_hint()
 
     def _mark(self, path: str, code: int, size_text: str = "") -> None:
         """主线程回调：更新某一行的状态与证物格。"""
         self.status[path] = code
+        if size_text:
+            self.sizes[path] = size_text
         if self.tree.exists(path):
             values = self.tree.item(path, "values")
             new_size = size_text or (values[0] if values else "")
@@ -2562,7 +2596,8 @@ class ImageProcessorPro:
 
     def _update_retry_label(self) -> None:
         count = len(self.failed_paths)
-        self.btn_retry.config(text=f"重试失败 ({count})" if count else "重试失败")
+        self.btn_retry.config(
+            text=self.trf("重试失败 ({n})", n=count) if count else self.tr("重试失败"))
 
     def start_thread(self, only_failed: bool = False) -> None:
         if self._running:
@@ -3166,7 +3201,29 @@ class ImageProcessorPro:
         if self._selected_path() == source:
             self.btn_preview.config(state="normal")
 
+    def _refresh_progress_label(self) -> None:
+        """按当前语言重刷进度/结案标签。
+
+        这两处文案是运行时拼出来的，控件登记表里没有它们；不重刷的话，
+        处理完再切语言，左侧状态区会一直停在旧语言。
+        """
+        st = getattr(self, "_finish_state", None)
+        if st:
+            self.lbl_progress.config(
+                text=self.trf("成功 {ok} / 失败 {failed}\n用时 {t}s",
+                              ok=st["ok"], failed=st["failed"],
+                              t=f"{st['elapsed']:.1f}")
+                     + (self.tr("\n已取消") if st["cancelled"] else ""))
+            return
+        pr = getattr(self, "_progress_state", None)
+        if pr:
+            done, total = pr
+            pct = int(done / total * 100) if total else 0
+            self.lbl_progress.config(text=self.trf("进度 {done}/{total}\n{pct}%",
+                                                  done=done, total=total, pct=pct))
+
     def _set_progress(self, done: int, total: int) -> None:
+        self._progress_state = (done, total)
         pct = int(done / total * 100) if total else 0
         self.lbl_progress.config(text=self.trf("进度 {done}/{total}\n{pct}%",
                                             done=done, total=total, pct=pct))
@@ -3190,6 +3247,8 @@ class ImageProcessorPro:
         else:
             self.lbl_status.config(text=f"{ok}/{total} · {failed} FAIL", fg=C["red"])
 
+        self._finish_state = {"ok": ok, "failed": failed,
+                              "elapsed": elapsed, "cancelled": cancelled}
         self.lbl_progress.config(
             text=self.trf("成功 {ok} / 失败 {failed}\n用时 {t}s",
                           ok=ok, failed=failed, t=f"{elapsed:.1f}")

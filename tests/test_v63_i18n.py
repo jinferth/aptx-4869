@@ -98,6 +98,27 @@ def main():
     print("   日志样例:", [l for l in logs if "Resolved" in l or "PARALLEL" in l][:2])
     check("状态列英文", app.tree.item(files[0], "values")[1] == "Done")
 
+    # 切语言会重建清单。重建时若按"待处理"写死，处理完的图会整体退回未处理状态，
+    # 尺寸列变空、右侧详情卡也被清掉——这条断言盯的就是这个退化。
+    print("== 3.5 切语言后不丢处理结果 ==")
+    app.tree.selection_set(files[0])
+    app._show_detail(files[0])
+    root.update()
+    app.cmb_lang.set("中文")
+    app._on_lang_change()
+    root.update()
+    states = [app.tree.item(f, "values")[1] for f in files]
+    sizes = [app.tree.item(f, "values")[0] for f in files]
+    print("   切回中文后的状态:", states)
+    print("   尺寸列:", sizes)
+    check("切语言后状态仍是已完成", all(v == "已完成" for v in states))
+    check("切语言后尺寸列没丢", all(v for v in sizes))
+    check("切语言后选中项仍在", app.tree.selection() == (files[0],))
+    check("切语言后详情卡仍在", app.detail_vars["name"].get() == os.path.basename(files[0]))
+    app.cmb_lang.set("English")
+    app._on_lang_change()
+    root.update()
+
     print("== 4. 持久化 ==")
     saved = mod.load_settings()
     print("   settings.lang =", saved.get("lang"))
