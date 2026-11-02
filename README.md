@@ -1,5 +1,8 @@
 # 侦探工具箱 v5.14 · 使用说明与演进记录
 
+> **English** — APTX-4869 is a batch image processor for Windows: convert formats, resize, watermark, compress to a target file size, batch rename, and watch a folder for new images. Single exe, fully offline, no installer, MIT licensed.
+> **[Read the English manual →](README_EN.md)** · **[Download v5.14](https://github.com/jinferth/aptx-4869/releases/latest)**
+
 > APTX-4869 图像情报分析终端 —— 一个放在桌面的批量图片处理器。
 > 转格式、缩放、加水印、看成品，全部在一个窗口里完成，不需要联网。
 

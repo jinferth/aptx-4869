@@ -3,7 +3,7 @@
 > A batch image processor that lives on your desktop.
 > Convert formats, resize, watermark, inspect the results — all in one window, entirely offline.
 
-**English manual** · [中文说明](README.md)
+**English manual** · [中文说明](README.md) · **[Download the latest release](https://github.com/jinferth/aptx-4869/releases/latest)**
 
 ---
 
